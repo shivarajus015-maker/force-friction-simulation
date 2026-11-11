@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Force &amp; Friction Lab (ಬಲ ಮತ್ತು ಘರ್ಷಣೆ)</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Decorative Sky Elements (Pure CSS / SVG, no external images) -->
+  <div class="sky-backdrop" aria-hidden="true">
+    <div class="sun">
+      <div class="sun-core"></div>
+      <div class="sun-rays"></div>
+    </div>
+    <div class="cloud cloud-1"></div>
+    <div class="cloud cloud-2"></div>
+    <div class="cloud cloud-3"></div>
+  </div>
+
+  <div class="app-shell">
+    <!-- HEADER -->
+    <header class="lab-header">
+      <div class="title-group">
+        <div class="logo-badge" aria-hidden="true">
+          <span class="logo-car">🚗</span>
+          <span class="logo-spark">⚡</span>
+        </div>
+        <div>
+          <h1 class="lab-title">
+            Force &amp; Friction Lab
+            <span class="kannada-title">(ಬಲ ಮತ್ತು ಘರ್ಷಣೆ)</span>
+          </h1>
+          <p class="lab-subtitle">
+            8th Grade Interactive Science Experiment • ಎಂಟನೇ ತರಗತಿ ವಿಜ್ಞಾನ ಪ್ರಯೋಗ
+          </p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="progress-pill" id="quizProgressPill" title="Complete 5 pulls to unlock the Mini-Quiz!">
+          <span class="pill-icon">🧪</span>
+          <span class="pill-text">Pulls: <strong id="pullCountText">0 / 5</strong></span>
+          <div class="pill-bar">
+            <div class="pill-bar-fill" id="pullProgressFill"></div>
+          </div>
+        </div>
+
+        <button type="button" class="btn-pill btn-quiz-trigger hidden" id="openQuizBtn">
+          <span>🎓 Mini-Quiz</span>
+          <span class="kn-small">ಕ್ವಿಜ್</span>
+        </button>
+
+        <button type="button" class="btn-pill btn-sound" id="soundToggleBtn" aria-pressed="true" title="Toggle Sound Effects">
+          <span id="soundIcon">🔊</span>
+          <span class="btn-sound-label">Sound</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- QUICK 3-STEP GUIDE STRIP -->
+    <section class="steps-strip" aria-label="How to play">
+      <div class="step-chip">
+        <span class="step-num">1</span>
+        <span>Pick a Surface <small>(ಮೇಲ್ಮೈ ಆರಿಸಿ)</small></span>
+      </div>
+      <div class="step-arrow" aria-hidden="true">➜</div>
+      <div class="step-chip">
+        <span class="step-num">2</span>
+        <span>Pull Rubber Band ← <small>(ಹಿಂದಕ್ಕೆ ಎಳೆಯಿರಿ)</small></span>
+      </div>
+      <div class="step-arrow" aria-hidden="true">➜</div>
+      <div class="step-chip">
+        <span class="step-num">3</span>
+        <span>Release &amp; Log Data! <small>(ಬಿಡಿ &amp; ಗಮನಿಸಿ)</small></span>
+      </div>
+    </section>
+
+    <!-- THE STAGE (CENTER EXPERIMENT TRACK) -->
+    <main class="lab-main">
+      <section class="stage-card" aria-label="Experiment Track Stage">
+        <!-- Stage Top HUD -->
+        <div class="stage-hud">
+          <div class="hud-badge surface-hud">
+            <span class="hud-label">Surface (ಮೇಲ್ಮೈ):</span>
+            <span class="hud-value" id="hudSurfaceName">📄 Paper (ಕಾಗದ)</span>
+          </div>
+
+          <div class="hud-center-hint" id="stageHintBanner">
+            <span class="hint-pulse">👈 Drag the rubber band handle backward or use controls below!</span>
+          </div>
+
+          <div class="hud-badge distance-hud">
+            <span class="hud-label">Distance (ದೂರ):</span>
+            <span class="hud-value mono-num" id="hudDistanceValue">0.0 cm</span>
+          </div>
+        </div>
+
+        <!-- Interactive Track Arena -->
+        <div class="track-arena" id="trackArena">
+          <!-- Background Scenery Hills inside Arena -->
+          <div class="arena-backdrop" aria-hidden="true">
+            <div class="hill hill-1"></div>
+            <div class="hill hill-2"></div>
+            <div class="lab-flag-end">🏁</div>
+          </div>
+
+          <!-- Track Surface Layer -->
+          <div class="track-ground surface-paper" id="trackGround">
+            <!-- Pull Zone Overlay (left of 0 cm) -->
+            <div class="pull-zone" id="pullZone">
+              <div class="pull-zone-label">
+                <span>← PULL BACK</span>
+                <small>ಹಿಂದಕ್ಕೆ ಎಳೆಯಿರಿ</small>
+              </div>
+            </div>
+
+            <!-- Start Line Marker (0 cm) -->
+            <div class="start-line" id="startLine">
+              <div class="launcher-post post-top" aria-hidden="true"></div>
+              <div class="start-stripe" aria-hidden="true"></div>
+              <div class="launcher-post post-bottom" aria-hidden="true"></div>
+            </div>
+
+            <!-- Motion Trail Layer (from 0 cm to car position) -->
+            <div class="car-trail" id="carTrail">
+              <div class="trail-ribbon" id="trailRibbon"></div>
+              <div class="trail-tires" id="trailTires"></div>
+            </div>
+
+            <!-- Previous Best Run Ghost Marker -->
+            <div class="best-marker hidden" id="bestMarker" title="Highest Distance Run">
+              <span class="best-pin">🏆</span>
+              <span class="best-label" id="bestMarkerLabel">0 cm</span>
+            </div>
+
+            <!-- Stop Flag Marker -->
+            <div class="stop-flag hidden" id="stopFlag">
+              <span class="flag-badge" id="stopFlagText">0 cm</span>
+            </div>
+
+            <!-- Dust / Friction Particles Container -->
+            <div class="particles-layer" id="particlesLayer" aria-hidden="true"></div>
+
+            <!-- SVG Rubber Band Layer -->
+            <svg class="rubber-band-svg" id="rubberBandSvg" viewBox="0 0 1000 180" preserveAspectRatio="none" aria-hidden="true">
+              <!-- Top & Bottom elastic strands anchored at start posts (x = 190 -> 19%) -->
+              <line id="bandTop" class="band-strand" x1="190" y1="36" x2="144" y2="90" />
+              <line id="bandBottom" class="band-strand" x1="190" y1="144" x2="144" y2="90" />
+              <!-- Center tension tether to car -->
+              <line id="bandCenter" class="band-tether" x1="144" y1="90" x2="190" y2="90" />
+            </svg>
+
+            <!-- Draggable Rubber Band Pull Handle -->
+            <button
+              type="button"
+              class="pull-handle"
+              id="pullHandle"
+              aria-label="Drag backward to stretch rubber band and apply force"
+              title="Drag backward! (ಹಿಂದಕ್ಕೆ ಎಳೆಯಿರಿ)"
+            >
+              <span class="handle-grip">✊</span>
+              <span class="handle-force-tag" id="handleForceTag">0</span>
+            </button>
+
+            <!-- Cute Animated Toy Car -->
+            <div class="toy-car" id="toyCar" role="img" aria-label="Toy car on the track">
+              <div class="car-body-wrap" id="carBodyWrap">
+                <div class="car-headlight" aria-hidden="true"></div>
+                <span class="car-emoji" aria-hidden="true">🚗</span>
+                <div class="car-hook" aria-hidden="true"></div>
+              </div>
+              <div class="car-shadow" aria-hidden="true"></div>
+            </div>
+          </div>
+
+          <!-- Ruler Scale (0 cm to 100 cm) -->
+          <div class="track-ruler" id="trackRuler" aria-hidden="true">
+            <!-- Ticks generated cleanly in JS for exact 0–100 cm alignment -->
+          </div>
+        </div>
+
+        <!-- Pop-up Result Callout (Triggered when car stops) -->
+        <div class="result-popup hidden" id="resultPopup" role="status" aria-live="polite">
+          <div class="result-popup-card">
+            <div class="result-icon" id="resultIcon">🎉</div>
+            <div class="result-copy">
+              <p class="result-main-msg" id="resultMainMsg">
+                You applied 0 force. The Paper had 15 friction. The car moved 0 cm!
+              </p>
+              <p class="result-kn-msg" id="resultKnMsg">
+                ನೀವು 0 ಬಲ ಪ್ರಯೋಗಿಸಿದ್ದೀರಿ.
+              </p>
+            </div>
+            <div class="result-actions">
+              <button type="button" class="btn-popup-close" id="closeResultBtn" aria-label="Close message">✕</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- BOTTOM DASHBOARD: CONTROL PANEL + DATA LOG TABLE -->
+      <div class="dashboard-grid">
+        <!-- CONTROL PANEL -->
+        <section class="panel-card controls-card" aria-label="Experiment Controls">
+          <div class="panel-header">
+            <h2>🎛️ Control Panel <span class="kn-sub">(ನಿಯಂತ್ರಣ ಫಲಕ)</span></h2>
+          </div>
+
+          <!-- 1. Surface Selector -->
+          <div class="control-block">
+            <div class="block-label-row">
+              <label class="block-label">1. Choose Surface <span class="kn-inline">(ಮೇಲ್ಮೈ ಆಯ್ಕೆ)</span></label>
+              <span class="friction-mystery-badge" id="frictionHintBadge">Friction: Hidden 🔍</span>
+            </div>
+            <div class="surface-grid" role="radiogroup" aria-label="Surface Type">
+              <button type="button" class="surface-btn active" data-surface="paper" aria-checked="true">
+                <span class="surf-icon">📄</span>
+                <span class="surf-name">Paper</span>
+                <span class="surf-kn">ಕಾಗದ</span>
+                <span class="surf-tested hidden">✓</span>
+              </button>
+              <button type="button" class="surface-btn" data-surface="cloth" aria-checked="false">
+                <span class="surf-icon">🧵</span>
+                <span class="surf-name">Cloth</span>
+                <span class="surf-kn">ಬಟ್ಟೆ</span>
+                <span class="surf-tested hidden">✓</span>
+              </button>
+              <button type="button" class="surface-btn" data-surface="sandpaper" aria-checked="false">
+                <span class="surf-icon">🧱</span>
+                <span class="surf-name">Sandpaper</span>
+                <span class="surf-kn">ಮರಳು ಕಾಗದ</span>
+                <span class="surf-tested hidden">✓</span>
+              </button>
+              <button type="button" class="surface-btn" data-surface="carpet" aria-checked="false">
+                <span class="surf-icon">🟫</span>
+                <span class="surf-name">Carpet</span>
+                <span class="surf-kn">ಕಾರ್ಪೆಟ್</span>
+                <span class="surf-tested hidden">✓</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. Force Meter & Force Controls -->
+          <div class="control-block">
+            <div class="block-label-row">
+              <label class="block-label" for="forceSlider">2. Force Meter <span class="kn-inline">(ಬಲ ಮಾಪಕ)</span></label>
+              <span class="force-readout">
+                <strong id="forceValueText">0</strong> / 100
+                <span class="force-tag" id="forceStrengthTag">Ready (ಸಿದ್ಧ)</span>
+              </span>
+            </div>
+
+            <!-- Visual Force Meter Bar -->
+            <div class="force-meter-shell" aria-hidden="true">
+              <div class="force-meter-fill" id="forceMeterFill"></div>
+              <div class="force-meter-ticks">
+                <span></span><span></span><span></span><span></span>
+              </div>
+            </div>
+
+            <!-- Slider + Hold-to-Pull + Launch + Reset Buttons -->
+            <div class="force-controls-row">
+              <div class="slider-wrap">
+                <input
+                  type="range"
+                  id="forceSlider"
+                  class="force-slider"
+                  min="0"
+                  max="100"
+                  value="0"
+                  aria-label="Apply Force Slider"
+                />
+                <div class="slider-hints">
+                  <span>0 (Weak)</span>
+                  <span>50</span>
+                  <span>100 (Max)</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="action-buttons-row">
+              <button type="button" class="btn-game btn-hold" id="holdPullBtn">
+                <span class="btn-emoji">💪</span>
+                <span class="btn-text">
+                  <strong>Hold to Pull</strong>
+                  <small>ಒತ್ತಿ ಹಿಡಿದು ಬಿಡಿ</small>
+                </span>
+              </button>
+
+              <button type="button" class="btn-game btn-launch" id="launchBtn" disabled>
+                <span class="btn-emoji">🚀</span>
+                <span class="btn-text">
+                  <strong>Release Car!</strong>
+                  <small>ಕಾರು ಬಿಡಿ</small>
+                </span>
+              </button>
+
+              <button type="button" class="btn-game btn-reset" id="resetBtn">
+                <span class="btn-emoji">🔄</span>
+                <span class="btn-text">
+                  <strong>Try Again</strong>
+                  <small>ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ</small>
+                </span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- DATA LOGGING TABLE -->
+        <section class="panel-card datalog-card" aria-label="Experiment Data Table">
+          <div class="panel-header datalog-header">
+            <div>
+              <h2>📊 Experiment Data Log <span class="kn-sub">(ಪ್ರಯೋಗದ ದಾಖಲೆಗಳು)</span></h2>
+              <p class="datalog-note">Highest distance row is highlighted in <span class="green-chip">Green 🏆</span></p>
+            </div>
+            <button type="button" class="btn-clear-log" id="clearLogBtn" title="Clear Table">
+              🗑️ Clear
+            </button>
+          </div>
+
+          <div class="table-scroll">
+            <table class="data-table" id="dataTable">
+              <thead>
+                <tr>
+                  <th>Surface Type<br /><small>ಮೇಲ್ಮೈ ವಿಧ</small></th>
+                  <th>Force Applied<br /><small>ಪ್ರಯೋಗಿಸಿದ ಬಲ</small></th>
+                  <th>Distance Traveled<br /><small>ಚಲಿಸಿದ ದೂರ</small></th>
+                </tr>
+              </thead>
+              <tbody id="dataTableBody">
+                <tr class="empty-row" id="emptyLogRow">
+                  <td colspan="3">
+                    <div class="empty-state">
+                      <span>🚗💨</span>
+                      <p>Pull the rubber band and release the car to record your first trial!</p>
+                      <small>ರಬ್ಬರ್ ಬ್ಯಾಂಡ್ ಎಳೆದು ಕಾರನ್ನು ಬಿಡಿ — ಫಲಿತಾಂಶ ಇಲ್ಲಿ ದಾಖಲಾಗುತ್ತದೆ.</small>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- MINI-QUIZ MODAL (Triggered after 5 successful pulls) -->
+  <div class="modal-backdrop hidden" id="quizModal" role="dialog" aria-modal="true" aria-labelledby="quizModalTitle">
+    <div class="quiz-modal-card">
+      <div class="confetti-layer" id="confettiLayer" aria-hidden="true"></div>
+      <div class="quiz-header">
+        <span class="quiz-badge">🎓 Science Checkpoint • ವಿಜ್ಞಾನ ಕ್ವಿಜ್</span>
+        <h2 id="quizModalTitle">Mini-Quiz Challenge!</h2>
+        <p class="quiz-subtitle">You completed 5 experiment pulls! Let's test what you discovered.</p>
+      </div>
+
+      <div class="quiz-body" id="quizBody">
+        <div class="quiz-progress-dots" id="quizDots"></div>
+        <h3 class="quiz-question" id="quizQuestionEn">Question goes here</h3>
+        <p class="quiz-question-kn" id="quizQuestionKn">ಪ್ರಶ್ನೆ</p>
+
+        <div class="quiz-options" id="quizOptions"></div>
+
+        <div class="quiz-feedback hidden" id="quizFeedback"></div>
+      </div>
+
+      <div class="quiz-summary hidden" id="quizSummary">
+        <div class="summary-trophy">🏆</div>
+        <h3 id="summaryHeadline">Great Job, Scientist!</h3>
+        <p id="summaryScoreText">You scored 3 / 3!</p>
+        <div class="science-takeaway">
+          <strong>🔬 Key Discovery (ಮುಖ್ಯ ಅಂಶ):</strong>
+          <p>
+            Rough surfaces create <strong>more friction</strong> and slow objects down quickly.
+            Smooth surfaces create <strong>less friction</strong>, letting the car travel farther!
+          </p>
+          <p class="kn-takeaway">
+            ಒರಟಾದ ಮೇಲ್ಮೈಗಳು ಹೆಚ್ಚು ಘರ್ಷಣೆಯನ್ನು ಉಂಟುಮಾಡುತ್ತವೆ; ನಯವಾದ ಮೇಲ್ಮೈಗಳು ಕಡಿಮೆ ಘರ್ಷಣೆಯನ್ನು ಹೊಂದಿರುತ್ತವೆ.
+          </p>
+        </div>
+      </div>
+
+      <div class="quiz-footer">
+        <button type="button" class="btn-game btn-launch hidden" id="quizNextBtn">
+          <span>Next Question ➜</span>
+        </button>
+        <button type="button" class="btn-game btn-reset" id="quizCloseBtn">
+          <span>Back to Lab (ಪ್ರಯೋಗಶಾಲೆಗೆ ಹಿಂತಿರುಗಿ)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
